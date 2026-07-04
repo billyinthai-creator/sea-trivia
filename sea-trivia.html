@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEA Passport — Southeast Asia Trivia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --ink:#16211C;
+    --paper:#F6EFDD;
+    --paper-dim:#EFE5CC;
+    --jungle:#0E4D42;
+    --jungle-dark:#0A362F;
+    --marigold:#E4A335;
+    --coral:#D65F45;
+    --stamp:#B23A2E;
+    --line: rgba(22,33,28,0.14);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  html,body{
+    background:var(--jungle-dark);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 90% 8%, rgba(228,163,53,0.16), transparent 45%),
+      var(--jungle);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+  .app::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 1px, transparent 1px, transparent 14px);
+    pointer-events:none;
+  }
+  header.topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px 10px;
+    color:var(--paper);
+    position:relative; z-index:2;
+  }
+  .brand{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    opacity:.72;
+  }
+  .brand b{color:var(--marigold); font-weight:600;}
+  .stampcount{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--paper);
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(255,255,255,0.18);
+    padding:4px 10px;
+    border-radius:100px;
+  }
+  main{
+    flex:1;
+    position:relative; z-index:2;
+    padding:6px 20px 28px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---- HOME SCREEN ---- */
+  .hero{
+    color:var(--paper);
+    padding:18px 2px 22px;
+  }
+  .hero h1{
+    font-family:'Fraunces',serif;
+    font-weight:900;
+    font-size:40px;
+    line-height:.96;
+    margin:0 0 10px;
+    letter-spacing:-0.01em;
+  }
+  .hero h1 em{
+    font-style:italic;
+    color:var(--marigold);
+  }
+  .hero p{
+    font-size:14.5px;
+    line-height:1.5;
+    color:rgba(246,239,221,0.78);
+    margin:0;
+    max-width:38ch;
+  }
+  .country-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:8px;
+  }
+  .country-card{
+    background:var(--paper);
+    border-radius:14px;
+    padding:16px 14px;
+    text-align:left;
+    border:1px solid rgba(22,33,28,0.1);
+    cursor:pointer;
+    position:relative;
+    transition:transform .15s ease, box-shadow .15s ease;
+    box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 14px rgba(0,0,0,0.18);
+  }
+  .country-card:active{ transform:scale(0.97); }
+  .country-card:hover{ transform:translateY(-2px); box-shadow:0 1px 0 rgba(255,255,255,0.4) inset, 0 10px 20px rgba(0,0,0,0.22); }
+  .country-card .flag{ font-size:26px; display:block; margin-bottom:8px; }
+  .country-card .cname{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:16px;
+    display:block;
+    color:var(--ink);
+  }
+  .country-card .ccode{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:.1em;
+    color:var(--jungle);
+    opacity:.6;
+  }
+  .country-card .done-badge{
+    position:absolute; top:10px; right:10px;
+    width:22px; height:22px;
+    border-radius:50%;
+    background:var(--stamp);
+    color:var(--paper);
+    font-size:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700;
+    transform:rotate(-8deg);
+  }
+
+  /* ---- QUIZ SCREEN ---- */
+  .quiz-header{
+    color:var(--paper);
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .back-btn{
+    background:none; border:none; color:var(--paper);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px; letter-spacing:.06em;
+    cursor:pointer; opacity:.75; padding:6px 0;
+  }
+  .back-btn:hover{ opacity:1; }
+  .progress-track{
+    height:5px; border-radius:100px;
+    background:rgba(255,255,255,0.15);
+    overflow:hidden; margin-bottom:18px;
+  }
+  .progress-fill{
+    height:100%; background:var(--marigold);
+    transition:width .35s ease;
+  }
+  .quiz-card{
+    background:var(--paper);
+    border-radius:18px;
+    padding:26px 22px 22px;
+    position:relative;
+    box-shadow:0 14px 30px rgba(0,0,0,0.25);
+  }
+  .quiz-card .qmeta{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.1em;
+    color:var(--jungle);
+    opacity:.65;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .quiz-card h2{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:22px;
+    line-height:1.22;
+    margin:0 0 20px;
+    color:var(--ink);
+  }
+  .choices{ display:flex; flex-direction:column; gap:10px; }
+  .choice{
+    display:flex; align-items:center; gap:12px;
+    background:var(--paper-dim);
+    border:1.5px solid transparent;
+    border-radius:11px;
+    padding:13px 14px;
+    font-size:14.5px;
+    font-weight:500;
+    text-align:left;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .choice .letter{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:12px;
+    width:24px; height:24px;
+    border-radius:50%;
+    background:var(--jungle);
+    color:var(--paper);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .choice:hover{ border-color:var(--jungle); }
+  .choice.correct{
+    background:#DCEEE0; border-color:#3E8A5B;
+  }
+  .choice.correct .letter{ background:#3E8A5B; }
+  .choice.wrong{
+    background:#F5DCD6; border-color:var(--stamp);
+  }
+  .choice.wrong .letter{ background:var(--stamp); }
+  .choice.disabled{ pointer-events:none; opacity:.6; }
+  .choice.disabled.correct,.choice.disabled.wrong{ opacity:1; }
+
+  .feedback{
+    margin-top:16px;
+    font-size:13px;
+    color:var(--jungle);
+    opacity:0;
+    transition:opacity .2s ease;
+    min-height:18px;
+  }
+  .feedback.show{ opacity:.85; }
+
+  .next-btn{
+    margin-top:16px;
+    width:100%;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    border-radius:11px;
+    padding:14px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    opacity:0;
+    transform:translateY(4px);
+    transition:all .2s ease;
+  }
+  .next-btn.show{ opacity:1; transform:translateY(0); }
+
+  /* stamp animation */
+  .stamp-pop{
+    position:absolute;
+    top:18px; right:18px;
+    width:58px; height:58px;
+    border:3px solid var(--stamp);
+    border-radius:50%;
+    color:var(--stamp);
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    font-size:9px;
+    letter-spacing:.05em;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    transform:rotate(-18deg) scale(0);
+    opacity:0;
+    pointer-events:none;
+  }
+  .stamp-pop.animate{
+    animation:stampIn .5s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  @keyframes stampIn{
+    0%{ transform:rotate(-18deg) scale(2.2); opacity:0; }
+    60%{ transform:rotate(-14deg) scale(0.92); opacity:1; }
+    100%{ transform:rotate(-14deg) scale(1); opacity:1; }
+  }
+
+  /* ---- RESULTS SCREEN ---- */
+  .passport{
+    background:var(--paper);
+    border-radius:18px;
+    padding:24px 22px;
+    box-shadow:0 14px 30px rgba(0,0,0,0.25);
+    position:relative;
+  }
+  .passport .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--jungle);
+    opacity:.65;
+    margin-bottom:6px;
+  }
+  .passport h2{
+    font-family:'Fraunces',serif;
+    font-weight:900;
+    font-size:30px;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .passport .scoreline{
+    font-size:14px;
+    color:var(--jungle);
+    margin-bottom:18px;
+  }
+  .stamprow{
+    display:flex; flex-wrap:wrap; gap:10px;
+    padding:16px 0; border-top:1px dashed var(--line); border-bottom:1px dashed var(--line);
+    margin-bottom:18px;
+  }
+  .mini-stamp{
+    width:40px; height:40px; border-radius:50%;
+    border:2.5px solid;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700; font-size:9px;
+  }
+  .mini-stamp.hit{ border-color:var(--stamp); color:var(--stamp); transform:rotate(-10deg); }
+  .mini-stamp.miss{ border-color:rgba(22,33,28,0.2); color:rgba(22,33,28,0.3); }
+
+  .verdict{
+    font-size:14.5px;
+    line-height:1.5;
+    color:var(--ink);
+    margin-bottom:20px;
+  }
+  .verdict b{ color:var(--jungle); }
+
+  #scorecard{ background:var(--paper); }
+  .card-watermark{
+    display:none;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    color:var(--jungle);
+    opacity:.55;
+    text-align:right;
+    padding-top:4px;
+  }
+  #scorecard.capturing{ padding:22px 22px 16px; }
+  #scorecard.capturing .card-watermark{ display:block; }
+
+  .btn-row{ display:flex; flex-direction:column; gap:10px; }
+  .btn-primary, .btn-secondary{
+    border:none; border-radius:11px; padding:14px;
+    font-family:'Inter',sans-serif; font-weight:600; font-size:14px;
+    cursor:pointer; text-align:center; text-decoration:none; display:block;
+  }
+  .btn-primary{ background:var(--marigold); color:var(--ink); }
+  .btn-secondary{ background:var(--jungle); color:var(--paper); }
+  .btn-secondary:hover, .btn-primary:hover{ filter:brightness(1.05); }
+
+  /* monetization slot */
+  .ad-slot{
+    margin-top:20px;
+    display:block;
+    border:1px solid rgba(228,163,53,0.35);
+    background:rgba(228,163,53,0.08);
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+    color:var(--marigold);
+    text-decoration:none;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    transition:background .15s ease;
+  }
+  .ad-slot:hover{ background:rgba(228,163,53,0.15); }
+
+  footer.foot{
+    text-align:center;
+    padding:16px 20px 24px;
+    color:rgba(246,239,221,0.4);
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    letter-spacing:.08em;
+    position:relative; z-index:2;
+  }
+  footer.foot a{ color:rgba(246,239,221,0.6); }
+
+  .hidden{ display:none !important; }
+
+  @media (prefers-reduced-motion: reduce){
+    .stamp-pop.animate{ animation:none; opacity:1; transform:rotate(-14deg) scale(1); }
+    .country-card, .next-btn{ transition:none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">Living in <b>Southeast Asia</b></div>
+    <div class="stampcount" id="stampCounter">0 / 11 stamped</div>
+  </header>
+
+  <main>
+
+    <!-- HOME SCREEN -->
+    <section id="screen-home">
+      <div class="hero">
+        <h1>Your SEA<br><em>Passport</em> Quiz</h1>
+        <p>Pick a country. Six questions. Collect a stamp for every one you nail. How well do you actually know Southeast Asia?</p>
+      </div>
+      <div class="country-grid" id="countryGrid"></div>
+    </section>
+
+    <!-- QUIZ SCREEN -->
+    <section id="screen-quiz" class="hidden">
+      <div class="quiz-header">
+        <button class="back-btn" id="backBtn">&larr; countries</button>
+        <div class="brand" id="quizCountryLabel"></div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="quiz-card">
+        <div class="stamp-pop" id="stampPop">CORRECT</div>
+        <div class="qmeta" id="qMeta">Question 1 of 6</div>
+        <h2 id="qText"></h2>
+        <div class="choices" id="choices"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="next-btn" id="nextBtn">Next question &rarr;</button>
+      </div>
+    </section>
+
+    <!-- RESULTS SCREEN -->
+    <section id="screen-results" class="hidden">
+      <div class="passport">
+        <div id="scorecard">
+          <div class="eyebrow" id="resultCountryLabel">Thailand</div>
+          <h2 id="resultTitle">Nailed it.</h2>
+          <div class="scoreline" id="resultScore">5 / 6 correct</div>
+          <div class="stamprow" id="resultStamps"></div>
+          <div class="verdict" id="resultVerdict"></div>
+          <div class="card-watermark">SEA PASSPORT &middot; livinginsoutheastasia.com</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="shareBtn">📸 Save my scorecard</button>
+          <button class="btn-secondary" id="retryBtn">Try this country again</button>
+          <button class="btn-secondary" id="moreBtn">Stamp another country</button>
+          <a class="btn-secondary" style="background:var(--ink);" href="https://livinginsoutheastasia.com/links.html" target="_blank" rel="noopener">Get the SEA cost-of-living guides &rarr;</a>
+        </div>
+      </div>
+
+      <!-- MONETIZATION: Monetag direct link -->
+      <a class="ad-slot" id="adSlot" href="https://omg10.com/4/11183651" target="_blank" rel="noopener sponsored">
+        Sponsored &middot; tap to continue
+      </a>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    livinginsoutheastasia.com &middot; made for people who actually want to move here
+  </footer>
+</div>
+
+<script>
+(function(){
+
+  const STORAGE_KEY = "sea-passport-stamps";
+
+  function loadStamps(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){
+      return [];
+    }
+  }
+
+  function saveStamps(setObj){
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...setObj]));
+    }catch(e){ /* storage unavailable — quiz still works, just won't persist */ }
+  }
+
+  const QUESTIONS = {
+    TH: { name:"Thailand", flag:"🇹🇭",
+      qs:[
+        {q:"What is the capital of Thailand?", c:["Bangkok","Chiang Mai","Phuket","Pattaya"], a:0},
+        {q:"What is Thailand's official currency?", c:["Baht","Kip","Riel","Ringgit"], a:0},
+        {q:"What is Thailand's biggest festival, marking the traditional New Year?", c:["Songkran","Loy Krathong","Vesak","Tet"], a:0},
+        {q:"Which river runs through the heart of Bangkok?", c:["Chao Phraya","Mekong","Irrawaddy","Red River"], a:0},
+        {q:"Which sea borders the island of Phuket?", c:["Andaman Sea","South China Sea","Java Sea","Coral Sea"], a:0},
+        {q:"Thailand was historically known by which name?", c:["Siam","Burma","Annam","Champa"], a:0}
+      ]},
+    VN: { name:"Vietnam", flag:"🇻🇳",
+      qs:[
+        {q:"What is the capital of Vietnam?", c:["Hanoi","Ho Chi Minh City","Da Nang","Hue"], a:0},
+        {q:"What is Vietnam's official currency?", c:["Dong","Kip","Baht","Peso"], a:0},
+        {q:"What is Vietnam's iconic breakfast noodle soup called?", c:["Pho","Laksa","Tom Yum","Mie Goreng"], a:0},
+        {q:"Which is Vietnam's largest city by population?", c:["Ho Chi Minh City","Hanoi","Da Nang","Hai Phong"], a:0},
+        {q:"Which UNESCO-listed limestone bay is one of Vietnam's top attractions?", c:["Ha Long Bay","Phang Nga Bay","Palawan Bay","Krabi Bay"], a:0},
+        {q:"Vietnam shares a northern land border with which country?", c:["China","Bangladesh","Nepal","Myanmar"], a:0}
+      ]},
+    KH: { name:"Cambodia", flag:"🇰🇭",
+      qs:[
+        {q:"What is the capital of Cambodia?", c:["Phnom Penh","Siem Reap","Battambang","Sihanoukville"], a:0},
+        {q:"What is Cambodia's official currency?", c:["Riel","Kip","Dong","Baht"], a:0},
+        {q:"Which massive temple complex is Cambodia's most famous landmark?", c:["Angkor Wat","Borobudur","Bagan","Prambanan"], a:0},
+        {q:"What is the name of the lake in Cambodia famous for reversing its flow seasonally?", c:["Tonle Sap","Tonle Bassac","Mekong Delta","Boeung Kak"], a:0},
+        {q:"Cambodia was once part of which former colonial territory?", c:["French Indochina","Dutch East Indies","British Malaya","Spanish East Indies"], a:0},
+        {q:"What is the official language of Cambodia?", c:["Khmer","Lao","Thai","Vietnamese"], a:0}
+      ]},
+    LA: { name:"Laos", flag:"🇱🇦",
+      qs:[
+        {q:"What is the capital of Laos?", c:["Vientiane","Luang Prabang","Pakse","Savannakhet"], a:0},
+        {q:"What is Laos's official currency?", c:["Kip","Riel","Dong","Baht"], a:0},
+        {q:"Laos is traditionally known as the \"Land of a...\"?", c:["Million Elephants","Thousand Temples","Golden Pagodas","Rice Terraces"], a:0},
+        {q:"What makes Laos geographically unique in Southeast Asia?", c:["It's landlocked","It's an island nation","It's a peninsula","It has no rivers"], a:0},
+        {q:"Which major river forms much of Laos's western border with Thailand?", c:["Mekong","Chao Phraya","Red River","Irrawaddy"], a:0},
+        {q:"Which UNESCO-listed town is famous for its morning monk alms-giving?", c:["Luang Prabang","Vientiane","Pakse","Vang Vieng"], a:0}
+      ]},
+    MY: { name:"Malaysia", flag:"🇲🇾",
+      qs:[
+        {q:"What is the capital of Malaysia?", c:["Kuala Lumpur","Penang","Johor Bahru","Malacca"], a:0},
+        {q:"What is Malaysia's official currency?", c:["Ringgit","Rupiah","Peso","Dong"], a:0},
+        {q:"What is the iconic twin-towered skyscraper in Kuala Lumpur called?", c:["Petronas Towers","KL Tower","Merdeka Tower","Union Towers"], a:0},
+        {q:"Malaysia is split by the South China Sea into Peninsular Malaysia and which region?", c:["East Malaysia (Borneo)","Java","Sumatra","Sulawesi"], a:0},
+        {q:"What form of government does Malaysia have?", c:["Constitutional monarchy","Republic","Absolute monarchy","One-party state"], a:0},
+        {q:"Which hill station near KL is famous for its tea plantations?", c:["Cameron Highlands","Genting Highlands","Bukit Bintang","Langkawi"], a:0}
+      ]},
+    ID: { name:"Indonesia", flag:"🇮🇩",
+      qs:[
+        {q:"What is the long-time capital of Indonesia?", c:["Jakarta","Bali","Surabaya","Bandung"], a:0},
+        {q:"What is Indonesia's official currency?", c:["Rupiah","Ringgit","Peso","Baht"], a:0},
+        {q:"Indonesia is the world's largest what kind of country?", c:["Archipelago nation","Landlocked country","Peninsula","Desert nation"], a:0},
+        {q:"Which famous Buddhist temple is located in Indonesia?", c:["Borobudur","Angkor Wat","Bagan","Wat Arun"], a:0},
+        {q:"Which Indonesian island is the most popular with tourists and expats?", c:["Bali","Palawan","Boracay","Phuket"], a:0},
+        {q:"Indonesia has the world's largest population of which religion?", c:["Muslims","Buddhists","Hindus","Christians"], a:0}
+      ]},
+    PH: { name:"Philippines", flag:"🇵🇭",
+      qs:[
+        {q:"What is the capital of the Philippines?", c:["Manila","Cebu","Davao","Quezon City"], a:0},
+        {q:"What is the Philippines' official currency?", c:["Peso","Ringgit","Rupiah","Baht"], a:0},
+        {q:"Roughly how many islands make up the Philippines?", c:["Over 7,000","About 100","Around 500","Just 12"], a:0},
+        {q:"Alongside English, what is the main national language of the Philippines?", c:["Filipino (Tagalog)","Malay","Khmer","Thai"], a:0},
+        {q:"Which famous UNESCO-listed rice terraces are in the Philippines?", c:["Banaue Rice Terraces","Sapa Terraces","Ubud Terraces","Sagada Terraces"], a:0},
+        {q:"The Philippines was historically a colony of which two nations?", c:["Spain and the US","France and Britain","Portugal and Holland","Japan and China"], a:0}
+      ]},
+    SG: { name:"Singapore", flag:"🇸🇬",
+      qs:[
+        {q:"Singapore is a city-state — what is its capital?", c:["Singapore itself","Jurong","Sentosa","Changi"], a:0},
+        {q:"What is Singapore's official currency?", c:["Singapore Dollar","Ringgit","Baht","Rupiah"], a:0},
+        {q:"Which hotel is famous for its rooftop infinity pool overlooking the skyline?", c:["Marina Bay Sands","Raffles Hotel","Fullerton Hotel","Shangri-La"], a:0},
+        {q:"Singapore is famous for strict laws against littering and the sale of what?", c:["Chewing gum","Hats","Bicycles","Umbrellas"], a:0},
+        {q:"Which park is known for its giant tree-like Supertree structures?", c:["Gardens by the Bay","Sentosa Island","Botanic Gardens","East Coast Park"], a:0},
+        {q:"Along with English, Mandarin and Malay, what is Singapore's fourth official language?", c:["Tamil","Khmer","Lao","Burmese"], a:0}
+      ]},
+    MM: { name:"Myanmar", flag:"🇲🇲",
+      qs:[
+        {q:"What is the capital of Myanmar?", c:["Naypyidaw","Yangon","Mandalay","Bagan"], a:0},
+        {q:"What is Myanmar's official currency?", c:["Kyat","Baht","Kip","Riel"], a:0},
+        {q:"What is Myanmar's largest city and former capital?", c:["Yangon","Mandalay","Naypyidaw","Bagan"], a:0},
+        {q:"Myanmar was formerly known internationally by which name?", c:["Burma","Siam","Ceylon","Indochina"], a:0},
+        {q:"Which ancient plain in Myanmar is scattered with thousands of Buddhist temples?", c:["Bagan","Angkor","Borobudur","Luang Prabang"], a:0},
+        {q:"What is the majority religion practiced in Myanmar?", c:["Buddhism","Islam","Hinduism","Christianity"], a:0}
+      ]},
+    BN: { name:"Brunei", flag:"🇧🇳",
+      qs:[
+        {q:"What is the capital of Brunei?", c:["Bandar Seri Begawan","Kuala Belait","Seria","Tutong"], a:0},
+        {q:"What is Brunei's official currency?", c:["Brunei Dollar","Ringgit","Baht","Kip"], a:0},
+        {q:"Brunei sits on which island, shared with Malaysia and Indonesia?", c:["Borneo","Sumatra","Java","Sulawesi"], a:0},
+        {q:"What form of government does Brunei have?", c:["Absolute monarchy (Sultanate)","Republic","Parliamentary democracy","Communist state"], a:0},
+        {q:"Brunei's economy has historically been dominated by which industry?", c:["Oil and gas","Tourism","Agriculture","Textiles"], a:0},
+        {q:"What is Brunei's official religion?", c:["Islam","Buddhism","Hinduism","Christianity"], a:0}
+      ]},
+    TL: { name:"Timor-Leste", flag:"🇹🇱",
+      qs:[
+        {q:"What is the capital of Timor-Leste?", c:["Dili","Baucau","Ainaro","Suai"], a:0},
+        {q:"What is Timor-Leste's official currency?", c:["US Dollar","Rupiah","Riel","Peso"], a:0},
+        {q:"Timor-Leste gained independence in 2002 after decades of occupation by which country?", c:["Indonesia","Portugal","Australia","Malaysia"], a:0},
+        {q:"Timor-Leste became one of Southeast Asia's newest nations in which decade?", c:["2000s","1950s","1970s","1990s"], a:0},
+        {q:"What is the predominant religion in Timor-Leste, unusual for the region?", c:["Roman Catholicism","Islam","Buddhism","Hinduism"], a:0},
+        {q:"Timor-Leste shares the island of Timor with territory belonging to which country?", c:["Indonesia","Malaysia","Philippines","Papua New Guinea"], a:0}
+      ]}
+  };
+
+  const order = ["TH","VN","KH","LA","MM","MY","ID","PH","SG","BN","TL"];
+  const stampedCountries = new Set(loadStamps());
+
+  let currentCode = null;
+  let currentIdx = 0;
+  let currentScore = 0;
+  let currentAnswers = []; // true/false per question
+  let locked = false;
+
+  const el = id => document.getElementById(id);
+
+  function renderHome(){
+    const grid = el("countryGrid");
+    grid.innerHTML = "";
+    order.forEach(code=>{
+      const c = QUESTIONS[code];
+      const card = document.createElement("button");
+      card.className = "country-card";
+      card.innerHTML = `
+        <span class="flag">${c.flag}</span>
+        <span class="cname">${c.name}</span>
+        <span class="ccode">${code} &middot; 6 Q</span>
+        ${stampedCountries.has(code) ? '<span class="done-badge">✓</span>' : ''}
+      `;
+      card.addEventListener("click", ()=> startQuiz(code));
+      grid.appendChild(card);
+    });
+    el("stampCounter").textContent = `${stampedCountries.size} / 11 stamped`;
+  }
+
+  function show(screen){
+    ["home","quiz","results"].forEach(s=>{
+      el("screen-"+s).classList.toggle("hidden", s!==screen);
+    });
+  }
+
+  function startQuiz(code){
+    currentCode = code;
+    currentIdx = 0;
+    currentScore = 0;
+    currentAnswers = [];
+    el("quizCountryLabel").textContent = QUESTIONS[code].flag + " " + QUESTIONS[code].name;
+    show("quiz");
+    renderQuestion();
+  }
+
+  function renderQuestion(){
+    locked = false;
+    const c = QUESTIONS[currentCode];
+    const total = c.qs.length;
+    const q = c.qs[currentIdx];
+    el("qMeta").textContent = `Question ${currentIdx+1} of ${total}`;
+    el("qText").textContent = q.q;
+    el("progressFill").style.width = ((currentIdx)/total*100)+"%";
+    el("feedback").className = "feedback";
+    el("feedback").textContent = "";
+    el("nextBtn").className = "next-btn";
+    el("stampPop").className = "stamp-pop";
+
+    // shuffle choices, tracking correct index
+    const letters = ["A","B","C","D"];
+    const idxs = [0,1,2,3];
+    for(let i=idxs.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [idxs[i],idxs[j]]=[idxs[j],idxs[i]];
+    }
+    const correctPos = idxs.indexOf(q.a);
+
+    const choicesEl = el("choices");
+    choicesEl.innerHTML = "";
+    idxs.forEach((origIdx, pos)=>{
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.innerHTML = `<span class="letter">${letters[pos]}</span><span>${q.c[origIdx]}</span>`;
+      btn.addEventListener("click", ()=> selectAnswer(pos===correctPos, btn, choicesEl));
+      choicesEl.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(isCorrect, btn, choicesEl){
+    if(locked) return;
+    locked = true;
+    currentAnswers.push(isCorrect);
+    if(isCorrect) currentScore++;
+
+    [...choicesEl.children].forEach(ch=> ch.classList.add("disabled"));
+    btn.classList.add(isCorrect ? "correct" : "wrong");
+    if(!isCorrect){
+      // reveal correct one too
+      [...choicesEl.children].forEach((ch,i)=>{
+        // find correct via re-check: simplest is re-render text match not needed since btn already marked
+      });
+    }
+
+    const fb = el("feedback");
+    fb.textContent = isCorrect ? "Stamped. Correct answer." : "Not quite — no stamp this round.";
+    fb.classList.add("show");
+
+    if(isCorrect){
+      const stamp = el("stampPop");
+      stamp.textContent = "✓ STAMPED";
+      requestAnimationFrame(()=> stamp.classList.add("animate"));
+    }
+
+    el("nextBtn").classList.add("show");
+    const total = QUESTIONS[currentCode].qs.length;
+    el("nextBtn").textContent = (currentIdx === total-1) ? "See your passport →" : "Next question →";
+  }
+
+  el("nextBtn").addEventListener("click", ()=>{
+    const total = QUESTIONS[currentCode].qs.length;
+    if(currentIdx === total-1){
+      finishQuiz();
+    } else {
+      currentIdx++;
+      renderQuestion();
+    }
+  });
+
+  el("backBtn").addEventListener("click", ()=>{
+    show("home");
+    renderHome();
+  });
+
+  function finishQuiz(){
+    const c = QUESTIONS[currentCode];
+    const total = c.qs.length;
+    el("progressFill").style.width = "100%";
+    if(currentScore >= Math.ceil(total*0.5)){
+      stampedCountries.add(currentCode);
+      saveStamps(stampedCountries);
+    }
+
+    el("resultCountryLabel").textContent = c.flag + "  " + c.name.toUpperCase();
+    el("resultScore").textContent = `${currentScore} / ${total} correct`;
+
+    let title, verdict;
+    const pct = currentScore/total;
+    if(pct === 1){ title = "Full marks. Local status."; verdict = `You know <b>${c.name}</b> better than most guidebooks. Ready to test another country?`; }
+    else if(pct >= 0.67){ title = "Solidly stamped."; verdict = `Good instincts on <b>${c.name}</b> — you'd get by just fine on the ground.`; }
+    else if(pct >= 0.34){ title = "Getting there."; verdict = `A few gaps on <b>${c.name}</b>. Worth a deeper look before you land.`; }
+    else { title = "Fresh passport."; verdict = `<b>${c.name}</b> is still new territory — a good excuse to dig into the guide.`; }
+    el("resultTitle").textContent = title;
+    el("resultVerdict").innerHTML = verdict;
+
+    const stampRow = el("resultStamps");
+    stampRow.innerHTML = "";
+    currentAnswers.forEach((hit,i)=>{
+      const s = document.createElement("div");
+      s.className = "mini-stamp " + (hit ? "hit":"miss");
+      s.textContent = hit ? "✓" : "✕";
+      stampRow.appendChild(s);
+    });
+
+    show("results");
+  }
+
+  el("retryBtn").addEventListener("click", ()=> startQuiz(currentCode));
+  el("moreBtn").addEventListener("click", ()=>{ show("home"); renderHome(); });
+
+  el("shareBtn").addEventListener("click", async ()=>{
+    const shareBtn = el("shareBtn");
+    const card = el("scorecard");
+    const originalLabel = shareBtn.textContent;
+    shareBtn.textContent = "Generating…";
+    shareBtn.disabled = true;
+    card.classList.add("capturing");
+    try{
+      const canvas = await html2canvas(card, {
+        backgroundColor: "#F6EFDD",
+        scale: 2,
+        useCORS: true
+      });
+      const fileName = `sea-passport-${currentCode.toLowerCase()}.png`;
+
+      canvas.toBlob(async (blob)=>{
+        if(!blob){ shareBtn.textContent = originalLabel; shareBtn.disabled = false; return; }
+        const file = new File([blob], fileName, { type: "image/png" });
+
+        if(navigator.canShare && navigator.canShare({ files:[file] })){
+          try{
+            await navigator.share({
+              files:[file],
+              title:"My SEA Passport score",
+              text:`I scored ${currentScore}/${QUESTIONS[currentCode].qs.length} on the ${QUESTIONS[currentCode].name} round of SEA Passport — try it yourself.`
+            });
+          }catch(shareErr){
+            downloadBlob(blob, fileName);
+          }
+        } else {
+          downloadBlob(blob, fileName);
+        }
+        shareBtn.textContent = originalLabel;
+        shareBtn.disabled = false;
+        card.classList.remove("capturing");
+      }, "image/png");
+    }catch(err){
+      shareBtn.textContent = originalLabel;
+      shareBtn.disabled = false;
+      card.classList.remove("capturing");
+    }
+  });
+
+  function downloadBlob(blob, fileName){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(()=> URL.revokeObjectURL(url), 2000);
+  }
+
+  renderHome();
+})();
+</script>
+</body>
+</html>
